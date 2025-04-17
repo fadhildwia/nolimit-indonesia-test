@@ -16,11 +16,8 @@ const config = {
           DEFAULT: "#171717",
           foreground: "#fafafa",
         },
-        secondary: {
-        },
-        destructive: {
-        },
         muted: {
+          DEFAULT: "#e5e5e5",
           foreground: "#737373",
         },
         accent: {

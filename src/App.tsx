@@ -11,6 +11,7 @@ import { mockData } from "./mocks"
 import { DateRange } from "react-day-picker"
 import { LineChart } from "./components/LineChart"
 import { format } from "date-fns"
+import { PieChart } from "./components/PieChart"
 
 function App() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -59,13 +60,34 @@ function App() {
             <CardTitle>Population Trend Over Time</CardTitle>
             <CardDescription>
               US population changes from
-              {dateRange?.from ? format(dateRange.from, "yyyy") : "2013"} to{" "}
+              {dateRange?.from
+                ? format(dateRange.from, "yyyy")
+                : "2013"} to{" "}
               {dateRange?.to ? format(dateRange.to, "yyyy") : "2020"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[400px]">
-              <LineChart yAxisLabel="Population in (Millions)" dataKey="Population" data={filteredData} />
+              <LineChart
+                yAxisLabel="Population in (Millions)"
+                dataKey="Population"
+                data={filteredData}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Population Distribution by Year</CardTitle>
+            <CardDescription>
+              Comparing population percentages from{" "}
+              {dateRange?.from ? dateRange.from.getFullYear() : "2013"} to{" "}
+              {dateRange?.to ? dateRange.to.getFullYear() : "2020"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px]">
+              <PieChart data={filteredData} />
             </div>
           </CardContent>
         </Card>
