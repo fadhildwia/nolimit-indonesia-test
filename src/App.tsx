@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   CardHeader,
   CardTitle,
@@ -7,11 +7,11 @@ import {
   CardDescription,
 } from "./components/Card"
 import { DatePickerWithRange } from "./components/DatePickerWithRange"
-import { mockData } from "./mocks"
 import { DateRange } from "react-day-picker"
 import { LineChart } from "./components/LineChart"
 import { format } from "date-fns"
 import { PieChart } from "./components/PieChart"
+import { ApiResponse } from "./types"
 
 function App() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -19,7 +19,39 @@ function App() {
     to: new Date(2020, 0, 1),
   })
 
-  const filteredData = mockData.data.filter((item) => {
+  const [data, setData] = useState<ApiResponse>({
+    data: [],
+    source: [],
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://datausa.io/api/data?drilldowns=Nation&measures=Population"
+        )
+        const result: ApiResponse = await response.json()
+
+        setData(result)
+
+        const years = result.data.map((item) => parseInt(item.Year))
+        const sortedYears = years.sort((a, b) => a - b)
+
+        const newDateRange = {
+          from: new Date(sortedYears[0], 0, 1),
+          to: new Date(sortedYears[sortedYears.length - 1], 0, 1),
+        }
+
+        setDateRange(newDateRange)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const filteredData = data.data.filter((item) => {
     const year = Number.parseInt(item.Year)
     const fromYear = dateRange?.from?.getFullYear() || 0
     const toYear = dateRange?.to?.getFullYear() || 3000
@@ -27,13 +59,17 @@ function App() {
     return year >= fromYear && year <= toYear
   })
 
+  const yearList = data.data
+    .map((item) => Number(item.Year))
+    .sort((a, b) => a - b)
+
   return (
     <main className="flex min-h-screen flex-col p-4 md:p-8 lg:p-12">
       <h1 className="text-3xl font-bold mb-6">US Population Data Dashboard</h1>
 
       <>
         <CardTitle>Organization Information</CardTitle>
-        {mockData.source.map((item, index) => (
+        {data.source.map((item, index) => (
           <Card className="mb-6 mt-6" key={index}>
             <CardContent>
               <h3 className="text-xl font-semibold">
@@ -49,7 +85,7 @@ function App() {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4">Filter by Year Range</h2>
           <DatePickerWithRange
-            availableYears={[2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020]}
+            availableYears={yearList}
             dateRange={dateRange}
             setDateRange={setDateRange}
           />
